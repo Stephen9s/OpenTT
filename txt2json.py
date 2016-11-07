@@ -45,10 +45,16 @@ def txt2json(file_name, test_name):
                     accepted_answers = ['A','B','C','D','E','F','G','H']
                     if any(x in line for x in accepted_answers) and len(line) == 2:
                         answer_key = re.sub('[^A-Z]', '', line)
-                        line = f.readline().strip()
-                        if not len(line):
-                            line = 'Unknown answer'
-                        current_question['answer_bank'][answer_key] = line
+                        answer = ""
+                        while True:
+                            line = f.readline().strip()
+                            if not len(answer) and not len(line):
+                                continue
+                            elif len(line) and ('actualtest' not in line and not re.match("^\d", line) and '(ISC)2 CSSLP' not in line):
+                                answer += line
+                            elif not len(line) and len(answer):
+                                break
+                        current_question['answer_bank'][answer_key] = answer
 
                     if 'Answer' in line and not in_explanation:
                         answers = line.split(' ')
@@ -79,7 +85,7 @@ def txt2json(file_name, test_name):
                         current_question = copy.deepcopy(question_obj)
                         push_results = False
 
-    print json.dumps(test, separators=(',',':',))
+    print json.dumps(test, indent=2, separators=(',',':',))
 
 
 
