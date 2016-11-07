@@ -62,6 +62,8 @@ def main(exam):
                     answer = answer.upper()
                     if answer == "X":
                         print answers
+                        print ""
+                        print "Explanation: %s" % question['explanation']
                         did_not_know_answer = True
                         break
                     if re.match("[A-Z]", answer):

@@ -26,19 +26,19 @@ def txt2json(file_name, test_name):
                 if 'QUESTION' in line:
                     in_explanation = False
                     words = line.split(' ')
-                    if 'DRAG' in words or 'CORRECT' in words: continue
+                    if 'DRAG' in words or 'CORRECT' in words or'HOTSPOT' in words: continue
                     #print 'Question: ' + words[2]
                     question = ''
                     while True:
                         line = f.readline().strip()
                         if not len(question) and not len(line):
                             continue
-                        elif len(line) and 'actualtest' not in line:
-                            question += line
+                        elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and '(ISC)2 CSSLP' not in line):
+                            question += " " + line
                         elif not len(line) and len(question):
                             break
                     #print question
-                    current_question['question'] = question
+                    current_question['question'] = question.strip()
                     in_question = True
 
                 if in_question:
@@ -48,13 +48,14 @@ def txt2json(file_name, test_name):
                         answer = ""
                         while True:
                             line = f.readline().strip()
+                            if 'Answer:' in line: break
                             if not len(answer) and not len(line):
                                 continue
-                            elif len(line) and ('actualtest' not in line and not re.match("^\d", line) and '(ISC)2 CSSLP' not in line):
+                            elif len(line) and ('actualtest' not in line and 'Exam' not in line):
                                 answer += line
                             elif not len(line) and len(answer):
                                 break
-                        current_question['answer_bank'][answer_key] = answer
+                        current_question['answer_bank'][answer_key] = answer.strip()
 
                     if 'Answer' in line and not in_explanation:
                         answers = line.split(' ')
@@ -65,16 +66,18 @@ def txt2json(file_name, test_name):
                         current_question['answers'] = answers
 
                     if 'Explanation' in line:
-                        line = f.readline().strip()
-                        explanation = ''
+                        explanation = ""
                         #print 'Explanation: %s' % line
                         while True:
                             line = f.readline().strip()
-                            if len(line):
-                                explanation += line
-                                #print line
-                            else: break
-                        current_question['explanation'] = explanation
+                            if 'QUESTION' in line: break
+                            if not len(explanation) and not len(line):
+                                continue
+                            elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
+                                explanation += " " + line
+                            elif not len(line) and len(explanation):
+                                break
+                        current_question['explanation'] = explanation.strip()
                         in_explanation = False
                         in_question = False
                         push_results = True
@@ -85,7 +88,7 @@ def txt2json(file_name, test_name):
                         current_question = copy.deepcopy(question_obj)
                         push_results = False
 
-    print json.dumps(test, indent=2, separators=(',',':',))
+    print json.dumps(test, indent=4, separators=(',',':',))
 
 
 
