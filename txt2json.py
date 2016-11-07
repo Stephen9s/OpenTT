@@ -33,7 +33,7 @@ def txt2json(file_name, test_name):
                         line = f.readline().strip()
                         if not len(question) and not len(line):
                             continue
-                        elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and '(ISC)2 CSSLP' not in line):
+                        elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
                             question += " " + line
                         elif not len(line) and len(question):
                             break

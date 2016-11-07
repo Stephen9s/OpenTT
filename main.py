@@ -75,6 +75,8 @@ def main(exam):
 
                 if correct_answers == required_correct_answers:
                     print "Correct!"
+                    if len(question['explanation']):
+                        print "Explanation: %s" % question['explanation']
                     break
                 elif correct_answers == 0:
                     print "Try again!"
