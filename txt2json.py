@@ -5,8 +5,11 @@ import copy
 import re
 import collections
 
+debug = False
+
 # Will convert actualtest.com PDFs after using pdf2text.py provided PDFMiner
 def txt2json(file_name, test_name):
+    global debug
     test = {}
     test['name'] = test_name
     test['questions'] = []
@@ -27,7 +30,7 @@ def txt2json(file_name, test_name):
                     in_explanation = False
                     words = line.split(' ')
                     if 'DRAG' in words or 'CORRECT' in words or'HOTSPOT' in words: continue
-                    #print 'Question: ' + words[2]
+                    if debug: print 'Question: ' + words[2]
                     question = ''
                     while True:
                         line = f.readline().strip()
@@ -37,7 +40,7 @@ def txt2json(file_name, test_name):
                             question += " " + line
                         elif not len(line) and len(question):
                             break
-                    #print question
+                    if debug: print question
                     current_question['question'] = question.strip()
                     in_question = True
 
@@ -51,7 +54,7 @@ def txt2json(file_name, test_name):
                             if 'Answer:' in line: break
                             if not len(answer) and not len(line):
                                 continue
-                            elif len(line) and ('actualtest' not in line and 'Exam' not in line):
+                            elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
                                 answer += line
                             elif not len(line) and len(answer):
                                 break
@@ -62,21 +65,19 @@ def txt2json(file_name, test_name):
                         answers.pop(0)
                         if answers[0].find(','):
                             answers = answers[0].split(',')
-                        #print 'Answer: ' + str(answers)
+                        if debug: print 'Answer: ' + str(answers)
                         current_question['answers'] = answers
 
                     if 'Explanation' in line:
                         explanation = ""
-                        #print 'Explanation: %s' % line
+                        if debug: print 'Explanation: %s' % line
                         while True:
-                            line = f.readline().strip()
-                            if 'QUESTION' in line: break
-                            if not len(explanation) and not len(line):
-                                continue
-                            elif len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
+                            unstripped_line=f.readline()
+                            line=unstripped_line.strip()
+                            if 'QUESTION' in line or not len(unstripped_line): break
+                            if len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
                                 explanation += " " + line
-                            elif not len(line) and len(explanation):
-                                break
+
                         current_question['explanation'] = explanation.strip()
                         in_explanation = False
                         in_question = False
@@ -97,7 +98,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file')
     parser.add_argument('-n', '--testname')
-    args = parser.parse_args()
+    parser.add_argument('-d', '--debug', default=False, action='store_true')
+    args=parser.parse_args()
+    debug=args.debug
 
     if args.file and args.testname:
         txt2json(args.file, args.testname)
