@@ -18,16 +18,20 @@ def txt2json(file_name, test_name):
     push_results = False
     question_obj = {'question': '', 'answers': [], 'explanation': '', 'answer_bank': collections.OrderedDict()}
     current_question = question_obj.copy()
+    question_count=0
+    broke_at_question=False
+    line=''
     with open(file_name, 'r') as f:
         while True:
-            line = f.readline()
+            if not broke_at_question: line = f.readline()
             if not line: break
 
             line = line.strip()
             if not len(line): continue
             else:
-                if 'QUESTION' in line:
-                    in_explanation = False
+                if 'QUESTION' in line or broke_at_question:
+                    broke_at_question=False
+                    in_explanation=False
                     words = line.split(' ')
                     if 'DRAG' in words or 'CORRECT' in words or'HOTSPOT' in words: continue
                     if debug: print 'Question: ' + words[2]
@@ -41,6 +45,7 @@ def txt2json(file_name, test_name):
                         elif not len(line) and len(question):
                             break
                     if debug: print question
+                    question_count+=1
                     current_question['question'] = question.strip()
                     in_question = True
 
@@ -74,7 +79,9 @@ def txt2json(file_name, test_name):
                         while True:
                             unstripped_line=f.readline()
                             line=unstripped_line.strip()
-                            if 'QUESTION' in line or not len(unstripped_line): break
+                            if 'QUESTION' in line or not len(unstripped_line):
+                                broke_at_question=True
+                                break
                             if len(line) and ('actualtest' not in line and not re.match("^\d+$", line) and 'Exam' not in line):
                                 explanation += " " + line
 
@@ -90,6 +97,7 @@ def txt2json(file_name, test_name):
                         push_results = False
 
     print json.dumps(test, indent=4, separators=(',',':',))
+    #print question_count
 
 
 
