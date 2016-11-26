@@ -41,7 +41,8 @@ class Exam(Iterator):
 def main(exam):
     input = None
     current_question=0
-    for question in exam:
+    incorrect_questions=[]
+    for i, question in enumerate(exam):
         current_question+=1
         print "Question(%s of %s): %s" % (current_question, exam.limit, question['question'])
         answer_keys = question['answer_bank'].keys()
@@ -61,44 +62,33 @@ def main(exam):
         while True:
             did_not_know_answer = False
             print ""
-            input = raw_input("Your answer [" + str(required_correct_answers) + "]: ")
+            input = raw_input("Your answer [" + str(required_correct_answers) + "]: ").strip().upper()
             if len(input):
-                correct_answers = 0
-                for answer in input:
-                    answer = answer.upper().strip()
-                    if answer == "P":
-                        print "Passed."
-                        did_not_know_answer = True
-                        break
-                    if answer == "X" and not exam.test_mode:
-                        print answers
-                        print ""
-                        print "Explanation: %s" % question['explanation']
-                        did_not_know_answer = True
-                        break
-                    if re.match("[A-Z]", answer):
-                        #print answers
-                        if answer in answers:
-                            correct_answers += 1
 
-                #print correct_answers
-
-                if did_not_know_answer:
+                if "P" in input:
+                    print "Passed."
                     break
 
-                if correct_answers == required_correct_answers:
+                if "X" in input and not exam.test_mode:
+                    print answers
+                    print ""
+                    print "Explanation: %s" % question['explanation']
+                    break
+
+                if sorted(input) == sorted(answers):
                     if exam.test_mode:
                         exam.correct += 1
                     else:
                         print "Correct!"
                         if len(question['explanation']):
                             print "Explanation: %s" % question['explanation']
-
                     break
-                elif correct_answers == 0 and not exam.test_mode:
-                    print "Try again!"
-                elif correct_answers == 0 and exam.test_mode:
-                    break
+                else:
+                    if not exam.test_mode:
+                        print "Try again!"
+                    else:
+                        incorrect_questions.append(question)
+                        break
 
 
             else:
@@ -111,8 +101,17 @@ def main(exam):
 
     if exam.test_mode:
         print "Test score: %s / %s" % (exam.correct, exam.limit)
-
-
+        while True:
+            show_incorrect = raw_input("Do you wish to view the questions that were answered incorrectly (y/n)? ").lower()
+            if show_incorrect == "n": break
+            elif show_incorrect == "y":
+                for j, inc_question in enumerate(incorrect_questions):
+                    print "Question %s: %s" % (j, inc_question['question'])
+                    print "Answer(s): %s" % (map(str,inc_question['answers']))
+                    print "Explanation: %s" % inc_question['explanation']
+                    raw_input("Next?")
+                    os.system('clear')
+            break
 
 
 if __name__ == '__main__':
