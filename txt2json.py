@@ -65,15 +65,16 @@ def txt2json(file_name, test_name):
                                 break
                         current_question['answer_bank'][answer_key] = answer.strip()
 
-                    if 'Answer' in line and not in_explanation:
+                    if 'Answer:' in line and not in_explanation:
                         answers = line.split(' ')
                         answers.pop(0)
                         if answers[0].find(','):
                             answers = answers[0].split(',')
+                        else: answers = answers[0].split('')
                         if debug: print 'Answer: ' + str(answers)
                         current_question['answers'] = answers
 
-                    if 'Explanation' in line:
+                    if 'Explanation:' in line or "Reference:" in line:
                         explanation = ""
                         if debug: print 'Explanation: %s' % line
                         while True:
@@ -98,9 +99,6 @@ def txt2json(file_name, test_name):
 
     print json.dumps(test, indent=4, separators=(',',':',))
     #print question_count
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

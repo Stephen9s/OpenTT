@@ -1,4 +1,6 @@
 import json, argparse, sys, random, os, re
+from threading import Thread
+from time import sleep
 from collections import Iterator
 
 # See example.json for example
@@ -7,10 +9,7 @@ class Exam(Iterator):
         self.file_name = file_name
         self.exam = self.load_test()
         self.questions = self.exam['questions']
-
-        if shuffle:
-            random.shuffle(self.questions)
-
+        if shuffle: random.shuffle(self.questions)
         self.shuffle_answers = shuffle_answers
         self.limit = limit
         if self.limit == -1: self.limit = len(self.questions)
@@ -38,12 +37,19 @@ class Exam(Iterator):
         else:
             raise StopIteration
 
+def countdown():
+    for i in range(60):
+        sys.stdout.write("Timer: %d\r" % (i))
+        sys.stdout.flush()
+        sleep(1)
+
 def main(exam):
     input = None
     current_question=0
     incorrect_questions=[]
     for i, question in enumerate(exam):
         current_question+=1
+        print "" # necessary for countdown??
         print "Question(%s of %s): %s" % (current_question, exam.limit, question['question'])
         answer_keys = question['answer_bank'].keys()
         answers = map(str, question['answers'])
@@ -107,7 +113,14 @@ def main(exam):
             elif show_incorrect == "y":
                 for j, inc_question in enumerate(incorrect_questions):
                     print "Question %s: %s" % (j, inc_question['question'])
+                    print ""
+                    answer_keys = inc_question['answer_bank'].keys()
+                    for k in sorted(answer_keys):
+                        print k + ': ' + inc_question['answer_bank'][k]
+
+                    print ""
                     print "Answer(s): %s" % (map(str,inc_question['answers']))
+                    print ""
                     print "Explanation: %s" % inc_question['explanation']
                     raw_input("Next?")
                     os.system('clear')
@@ -121,11 +134,15 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shuffle_answers', default=False, action='store_true')
     parser.add_argument('-t', '--test_mode', default=False, action='store_true')
     parser.add_argument('-l', '--question_limit', type=int, default=-1)
-    args = parser.parse_args()
+    pargs = parser.parse_args()
 
-    if args.file:
+    if pargs.file:
         os.system('clear')
-        main(Exam(file_name=args.file, shuffle=args.random_questions, shuffle_answers=args.shuffle_answers, limit=args.question_limit, test_mode=args.test_mode))
+        exam=Exam(file_name=pargs.file, shuffle=pargs.random_questions, shuffle_answers=pargs.shuffle_answers, limit=pargs.question_limit, test_mode=pargs.test_mode)
+        #t1=Thread(target=countdown)
+        t2=Thread(target=main, args=(exam,))
+        #t1.start()
+        t2.start()
     else:
         print "Exam file name must be provided."
         sys.exit(1)
