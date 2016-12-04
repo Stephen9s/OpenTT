@@ -24,6 +24,7 @@ Open Test Taker - Interactive Python testing suite
 - *Creating your own tests using the questions2json.py parser*
     - python questions2json.py -f <file> -t '<test_name>' -c '<chapter#>'
 
+```python
 ###### Test Template
 ;questions
 ^\d+\s[ A-Za-z0-9_@.\/#&+-]*$ <-- marks question
@@ -40,6 +41,7 @@ Example:
 A 2
 B 3
 C 1
+```
 D 4
 ;answers
 1 A
