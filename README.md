@@ -41,7 +41,7 @@ Example:
 A 2
 B 3
 C 1
-```
 D 4
 ;answers
 1 A
+```
