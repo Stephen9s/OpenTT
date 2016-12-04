@@ -6,9 +6,14 @@ from collections import Iterator
 # See example.json for example
 class Exam(Iterator):
     def __init__(self, file_name= None, shuffle=False, shuffle_answers=False, limit=-1, test_mode=False, **kwargs):
+
+        self.count_questions = None
+        if kwargs:
+            self.count_questions = kwargs['count_questions']
+
         self.file_name = file_name
         self.exam = self.load_test()
-        self.questions = self.exam['questions']
+        self.questions = [x for x in self.exam['questions'] if (not kwargs['chapter'] or x.get('chapter', None)==kwargs['chapter']) and (not kwargs['category'] or x.get('category', None)==kwargs['category'])]
         if shuffle: random.shuffle(self.questions)
         self.shuffle_answers = shuffle_answers
         self.limit = limit
@@ -16,9 +21,6 @@ class Exam(Iterator):
         self.test_mode = test_mode
         self.correct = 0
         self.i = -1
-        self.count_questions = None
-        if kwargs:
-            self.count_questions = kwargs['count_questions']
 
     def load_test(self):
         exam_data = None
@@ -50,11 +52,11 @@ def main(exam):
     input = None
     current_question=0
     incorrect_questions=[]
+    question_count=min(len(exam.questions), exam.limit)
     if not exam.count_questions:
         for i, question in enumerate(exam):
             current_question+=1
-            print "" # necessary for countdown??
-            print "Question(%s of %s): %s" % (current_question, exam.limit, question['question'])
+            print "Question(%s of %s): %s" % (current_question, question_count, question['question'])
             answer_keys = question['answer_bank'].keys()
             answers = map(str, question['answers'])
             required_correct_answers = len(answers)
@@ -138,6 +140,8 @@ def main(exam):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', default=None)
+    parser.add_argument('-c', '--chapter', default=None)
+    parser.add_argument('-g', '--category', default=None)
     parser.add_argument('-r', '--random_questions', default=False, action='store_true')
     parser.add_argument('-s', '--shuffle_answers', default=False, action='store_true')
     parser.add_argument('-t', '--test_mode', default=False, action='store_true')
@@ -147,7 +151,9 @@ if __name__ == '__main__':
 
     if pargs.file:
         os.system('clear')
-        exam=Exam(file_name=pargs.file, shuffle=pargs.random_questions, shuffle_answers=pargs.shuffle_answers, limit=pargs.question_limit, test_mode=pargs.test_mode, count_questions=pargs.count_questions)
+        # Temp is going to change; chapter may be substitued with category
+        temp={'chapter':pargs.chapter, 'category': pargs.category}
+        exam=Exam(file_name=pargs.file, shuffle=pargs.random_questions, shuffle_answers=pargs.shuffle_answers, limit=pargs.question_limit, test_mode=pargs.test_mode, count_questions=pargs.count_questions, **temp)
         #t1=Thread(target=countdown)
         t2=Thread(target=main, args=(exam,))
         #t1.start()

@@ -2,6 +2,8 @@
     "name": "Example Test Name",
     "questions": [
         {
+            "chapter":"0",
+            "category":"test",
             "question": "5+3*0?",
             "explanation": "Because...basic math!",
             "answer_bank": {
@@ -15,6 +17,8 @@
             ]
         },
         {
+            "chapter":"0",
+            "category":"testing",
             "question": "What supposedly fell on Newton's head?",
             "explanation": "It is an urban myth, but it was said to be an apple!",
             "answer_bank": {
@@ -28,6 +32,8 @@
             ]
         },
         {
+            "chapter":"2",
+            "category":"test",
             "question": "Which of these numbers is less than 10?",
             "explanation": "If it's not greater than or equal to ten, then it must be lower than it.",
             "answer_bank": {
