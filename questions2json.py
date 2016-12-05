@@ -15,7 +15,7 @@ def get_data(line):
     data[0] = alphanumeric.sub('', data[0])  # remove non-alphanumeric from identifier
 
     return data
-# Will convert actualtest.com PDFs after using pdf2text.py provided PDFMiner
+
 def questions2json(**kwargs):
     global debug
     test = {}
